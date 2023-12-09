@@ -12,13 +12,13 @@
 name: Update Checker
 
 env:
-  REPO_URL: https://github.com/coolsnowwolf/lede
-  REPO_BRANCH: master
+  REPO_URL: https://github.com/immortalwrt/immortalwrt
+  REPO_BRANCH: openwrt-23.05
 
 on:
   workflow_dispatch:
-#  schedule:
-#    - cron: 0 */18 * * *
+  schedule:
+    - cron: 35 15 * * *
 
 jobs:
   check:
@@ -29,6 +29,7 @@ jobs:
     - name: Get Commit Hash
       id: getHash
       run: |
+        REPO_BRANCH="$((curl -gs -H 'Content-Type: application/json' -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -X POST -d '{ "query": "query {repository(owner: \"immortalwrt\", name: \"immortalwrt\") {refs(refPrefix: \"refs/tags/\", last: 4, orderBy: {field: TAG_COMMIT_DATE, direction: ASC}) {edges {node {name}}}}}"}' https://api.github.com/graphql) | jq -r '.data.repository.refs.edges[].node.name' | grep v23 | tail -n 1)"
         git clone --depth 1 $REPO_URL -b $REPO_BRANCH .
         echo "::set-output name=commitHash::$(git rev-parse HEAD)"
 
